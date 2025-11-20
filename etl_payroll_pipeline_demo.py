@@ -1,28 +1,35 @@
 import os
 import io
 import pandas as pd
-from boxsdk import Client
-from boxsdk.auth.ccg_auth import CCGAuth
+from boxsdk import Client, OAuth2
 
 # ==========================
 # BOX AUTH (Client Credentials Grant)
 # ==========================
 
-client_id = os.environ["BOX_CLIENT_ID"]
-client_secret = os.environ["BOX_CLIENT_SECRET"]
-enterprise_id = os.environ["BOX_ENTERPRISE_ID"]
+# ===============================
+#   BOX AUTH (Developer Token)
+# ===============================
+# NOTE: This is ONLY for demo purposes.
+# Developer token expires every 60 minutes.
 
-auth = CCGAuth(
-    client_id=client_id,
-    client_secret=client_secret,
-    enterprise_id=enterprise_id
+from boxsdk import OAuth2, Client
+
+DEVELOPER_TOKEN = os.environ.get("BOX_DEVELOPER_TOKEN")
+
+if not DEVELOPER_TOKEN:
+    raise ValueError("ERROR: BOX_DEVELOPER_TOKEN is missing. Add it to GitHub Secrets.")
+
+auth = OAuth2(
+    client_id=None,
+    client_secret=None,
+    access_token=DEVELOPER_TOKEN
 )
-auth.authenticate_instance()
+
 client = Client(auth)
 
 me = client.user().get()
-print(f"Connected as: {me.name} ({me.login})")
-
+print(f"Connected (DEMO) as: {me.name} ({me.login})")
 
 # ============================================================
 # 2. RECURSIVE FILE LISTING
