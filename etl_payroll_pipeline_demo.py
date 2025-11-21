@@ -1,39 +1,35 @@
 import os
 import io
 import pandas as pd
-from boxsdk import Client, OAuth2
+from boxsdk import OAuth2, Client
 
 # ============================================================
-# 1. AUTHENTICATION USING DEVELOPER TOKEN (DEMO MODE ONLY)
+# 1. AUTHENTICATE TO BOX
 # ============================================================
 
-DEV_TOKEN = os.environ["BOX_DEVELOPER_TOKEN"]
+from boxsdk import Client
+from boxsdk.session.box_session import BoxSession
+import os
 
-# IMPORTANT:
-# store_tokens=None prevents SDK from trying to refresh token
-auth = OAuth2(
-    client_id=None,
-    client_secret=None,
-    access_token=DEV_TOKEN,
+# ============================================================
+# USE *ONLY* DEVELOPER TOKEN — NO REFRESH, NO OAUTH, NO CLIENT CREDENTIALS
+# ============================================================
+
+developer_token = os.environ["BOX_DEVELOPER_TOKEN"]
+
+# Create raw session that will NEVER refresh or request a new token
+session = BoxSession(
+    access_token=developer_token,
     refresh_token=None,
-    store_tokens=None
+    network_layer=None   # disables all oauth refresh behavior
 )
 
-client = Client(auth)
-
-print("Connected to Box using Developer Token.")
-print("--------------------------------------------------")
+# Create client using manual session instead of OAuth2
+client = Client(oauth=None, session=session)
 
 # Test connection
-try:
-    me = client.user().get()
-    print(f"Authenticated as: {me.name} ({me.login})")
-except Exception as e:
-    print("Failed to call Box API with developer token.")
-    print(str(e))
-    raise SystemExit(1)
-
-print("--------------------------------------------------")
+me = client.user().get()
+print(f"Connected to Box as: {me.name} ({me.login})")
 
 
 # ============================================================
@@ -414,14 +410,42 @@ if "Calc Date" in pua_out.columns:
 import os
 import pandas as pd
 
-# 1) Rename to  header names BEFORE save
+# 1) Rename to Preetam's header names BEFORE save
 rename_map = {
     "TS Org": "TS ORG",
     "Adjustment Reason": "Adjustment Reason Description",
 }
 pua_out.rename(columns=rename_map, inplace=True)
 
+# 2) (Optional) Reorder to exactly match Preetam's column order if available
+preetam_path = os.path.join(BASE_PATH, "2025_PUA_Data_Preetam.xlsx")
+if os.path.exists(preetam_path):
+    preetam_cols = pd.read_excel(preetam_path, nrows=0).columns.tolist()
+    # Add any missing columns as blank, then reorder
+    added_blank = []
+    for col in preetam_cols:
+        if col not in pua_out.columns:
+            pua_out[col] = pd.NA
+            added_blank.append(col)
+    pua_out = pua_out[preetam_cols]
+else:
+    preetam_cols = None
+    added_blank = []
 
+# # 3) Save once
+# out_path = os.path.join(
+#     BASE_PATH,
+#     r"C:\Users\terbe\Documents\Final Work ETL Process\2025_PUA_Data_Tayler_11182025.xlsx"
+# )
+# pua_out.to_excel(out_path, index=False)
+
+# # 4) Sanity prints
+# print("PUA rows:", len(pua_out))
+# print("Saved:", out_path)
+# if added_blank:
+#     print("\n[info] Added blank columns to match Preetam order:")
+#     for c in added_blank:
+#         print(f"  - {c}")
 
 import io
 from datetime import datetime
@@ -429,8 +453,7 @@ from datetime import datetime
 # ============================================================
 # Generate date string for filenames
 # ============================================================
-
-date_str = datetime.now().strftime("%m%d%Y_%H%M")   # MMDDYYYY_HHMM
+date_str = datetime.now().strftime("%m%d%Y")   # MMDDYYYY
 
 # Box folder where output should go
 box_folder_id = "351818509913"
@@ -479,6 +502,14 @@ print("Rows saved:", len(pua_out))
 print("Date stamp:", date_str)
 print("Uploaded to Box folder:", box_folder_id)
 
+if added_blank:
+    print("\n[info] Added blank columns:")
+    for c in added_blank:
+        print("  -", c)
+
+import os
+import pandas as pd
+from datetime import datetime
 
 # Standardize column names (remove leading/trailing spaces)
 df_cert_bw.columns = df_cert_bw.columns.str.strip()
@@ -764,8 +795,7 @@ csv_stream.seek(0)
 
 uploaded_csv = client.folder(box_folder_id).upload_stream(
     csv_stream,
-    cpa_csv_filename,
-    overwrite=True
+    cpa_csv_filename
 )
 
 print("\nCPA CSV uploaded successfully!")
@@ -781,8 +811,7 @@ xlsx_stream.seek(0)
 
 uploaded_xlsx = client.folder(box_folder_id).upload_stream(
     xlsx_stream,
-    cpa_xlsx_filename,
-    overwrite=True
+    cpa_xlsx_filename
 )
 
 print("\nCPA Excel uploaded successfully!")
