@@ -3,22 +3,11 @@ import io
 import pandas as pd
 from boxsdk import Client, OAuth2
 
-# ==========================
-# BOX AUTH (Client Credentials Grant)
-# ==========================
-
-# ===============================
-#   BOX AUTH (Developer Token)
-# ===============================
-# NOTE: This is ONLY for demo purposes.
-# Developer token expires every 60 minutes.
-
-from boxsdk import OAuth2, Client
-
+# For demo only – DIRECT DEVELOPER TOKEN
 DEVELOPER_TOKEN = os.environ.get("BOX_DEVELOPER_TOKEN")
 
 if not DEVELOPER_TOKEN:
-    raise ValueError("ERROR: BOX_DEVELOPER_TOKEN is missing. Add it to GitHub Secrets.")
+    raise ValueError("Missing BOX_DEVELOPER_TOKEN environment variable.")
 
 auth = OAuth2(
     client_id=None,
@@ -28,8 +17,10 @@ auth = OAuth2(
 
 client = Client(auth)
 
+# Test connection
 me = client.user().get()
-print(f"Connected (DEMO) as: {me.name} ({me.login})")
+print(f"Connected as: {me.name} ({me.login})")
+
 
 # ============================================================
 # 2. RECURSIVE FILE LISTING
