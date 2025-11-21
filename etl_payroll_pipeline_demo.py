@@ -7,14 +7,7 @@ from boxsdk import OAuth2, Client
 # 1. AUTHENTICATE TO BOX
 # ============================================================
 
-from boxsdk import Client
-from boxsdk.session.box_session import BoxSession
 import os
-
-# ============================================================
-# USE *ONLY* DEVELOPER TOKEN — NO REFRESH, NO OAUTH, NO CLIENT CREDENTIALS
-# ============================================================
-
 from boxsdk import Client, OAuth2
 
 # Developer token only — no refresh, no client ID/secret
@@ -25,8 +18,11 @@ auth = OAuth2(
 )
 
 client = Client(auth)
+
+# Test connection
 me = client.user().get()
-print(f"Connected as: {me.name}")
+print(f"Connected to Box as: {me.name} ({me.login})")
+
 
 
 # ============================================================
