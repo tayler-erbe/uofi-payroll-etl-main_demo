@@ -15,21 +15,18 @@ import os
 # USE *ONLY* DEVELOPER TOKEN — NO REFRESH, NO OAUTH, NO CLIENT CREDENTIALS
 # ============================================================
 
-developer_token = os.environ["BOX_DEVELOPER_TOKEN"]
+from boxsdk import Client, OAuth2
 
-# Create raw session that will NEVER refresh or request a new token
-session = BoxSession(
-    access_token=developer_token,
-    refresh_token=None,
-    network_layer=None   # disables all oauth refresh behavior
+# Developer token only — no refresh, no client ID/secret
+auth = OAuth2(
+    client_id=None,
+    client_secret=None,
+    access_token=os.environ["BOX_DEVELOPER_TOKEN"]
 )
 
-# Create client using manual session instead of OAuth2
-client = Client(oauth=None, session=session)
-
-# Test connection
+client = Client(auth)
 me = client.user().get()
-print(f"Connected to Box as: {me.name} ({me.login})")
+print(f"Connected as: {me.name}")
 
 
 # ============================================================
