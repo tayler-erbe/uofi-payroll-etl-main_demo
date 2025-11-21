@@ -1,4 +1,3 @@
-import os
 import io
 import pandas as pd
 
@@ -8,14 +7,29 @@ import pandas as pd
 # ============================================================
 
 from boxsdk import Client
-from boxsdk.auth import DeveloperTokenAuth
-
+from boxsdk.auth.oauth2 import OAuth2
+import os
 
 developer_token = os.environ["BOX_DEVELOPER_TOKEN"]
 
-auth = DeveloperTokenAuth(developer_token=developer_token)
+# Create OAuth2 object with ONLY access_token, and disable refresh URLs entirely
+auth = OAuth2(
+    client_id=None,
+    client_secret=None,
+    access_token=developer_token,
+    refresh_token=None,
+    store_tokens=None  # Never attempt storing tokens
+)
+
+# Monkey-patch the refresh method so it NEVER runs
+def no_refresh(*args, **kwargs):
+    return developer_token, None
+
+auth.refresh = no_refresh
+
 client = Client(auth)
 
+# Test connection
 me = client.user().get()
 print(f"Connected to Box as: {me.name} ({me.login})")
 
