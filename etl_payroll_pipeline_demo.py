@@ -412,42 +412,16 @@ if "Calc Date" in pua_out.columns:
 import os
 import pandas as pd
 
-# 1) Rename to Preetam's header names BEFORE save
+# 1) Rename header names BEFORE save
 rename_map = {
     "TS Org": "TS ORG",
     "Adjustment Reason": "Adjustment Reason Description",
 }
 pua_out.rename(columns=rename_map, inplace=True)
 
-# 2) (Optional) Reorder to exactly match Preetam's column order if available
-preetam_path = os.path.join(BASE_PATH, "2025_PUA_Data_Preetam.xlsx")
-if os.path.exists(preetam_path):
-    preetam_cols = pd.read_excel(preetam_path, nrows=0).columns.tolist()
-    # Add any missing columns as blank, then reorder
-    added_blank = []
-    for col in preetam_cols:
-        if col not in pua_out.columns:
-            pua_out[col] = pd.NA
-            added_blank.append(col)
-    pua_out = pua_out[preetam_cols]
-else:
-    preetam_cols = None
-    added_blank = []
 
-# # 3) Save once
-# out_path = os.path.join(
-#     BASE_PATH,
-#     r"C:\Users\terbe\Documents\Final Work ETL Process\2025_PUA_Data_Tayler_11182025.xlsx"
-# )
-# pua_out.to_excel(out_path, index=False)
 
-# # 4) Sanity prints
-# print("PUA rows:", len(pua_out))
-# print("Saved:", out_path)
-# if added_blank:
-#     print("\n[info] Added blank columns to match Preetam order:")
-#     for c in added_blank:
-#         print(f"  - {c}")
+
 
 import io
 from datetime import datetime
