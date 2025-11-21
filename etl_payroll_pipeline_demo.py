@@ -478,10 +478,6 @@ print("Rows saved:", len(pua_out))
 print("Date stamp:", date_str)
 print("Uploaded to Box folder:", box_folder_id)
 
-if added_blank:
-    print("\n[info] Added blank columns:")
-    for c in added_blank:
-        print("  -", c)
 
 import os
 import pandas as pd
