@@ -3,23 +3,37 @@ import io
 import pandas as pd
 from boxsdk import Client, OAuth2
 
-# For demo only – DIRECT DEVELOPER TOKEN
-DEVELOPER_TOKEN = os.environ.get("BOX_DEVELOPER_TOKEN")
+# ============================================================
+# 1. AUTHENTICATION USING DEVELOPER TOKEN (DEMO MODE ONLY)
+# ============================================================
 
-if not DEVELOPER_TOKEN:
-    raise ValueError("Missing BOX_DEVELOPER_TOKEN environment variable.")
+DEV_TOKEN = os.environ["BOX_DEVELOPER_TOKEN"]
 
+# IMPORTANT:
+# store_tokens=None prevents SDK from trying to refresh token
 auth = OAuth2(
     client_id=None,
     client_secret=None,
-    access_token=DEVELOPER_TOKEN
+    access_token=DEV_TOKEN,
+    refresh_token=None,
+    store_tokens=None
 )
 
 client = Client(auth)
 
+print("Connected to Box using Developer Token.")
+print("--------------------------------------------------")
+
 # Test connection
-me = client.user().get()
-print(f"Connected as: {me.name} ({me.login})")
+try:
+    me = client.user().get()
+    print(f"Authenticated as: {me.name} ({me.login})")
+except Exception as e:
+    print("Failed to call Box API with developer token.")
+    print(str(e))
+    raise SystemExit(1)
+
+print("--------------------------------------------------")
 
 
 # ============================================================
