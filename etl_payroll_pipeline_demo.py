@@ -1,28 +1,23 @@
 import os
 import io
 import pandas as pd
-from boxsdk import OAuth2, Client
+
 
 # ============================================================
 # 1. AUTHENTICATE TO BOX
 # ============================================================
 
-import os
-from boxsdk import Client, OAuth2
+from boxsdk import Client
+from boxsdk.auth import DeveloperTokenAuth
 
-# Developer token only — no refresh, no client ID/secret
-auth = OAuth2(
-    client_id=None,
-    client_secret=None,
-    access_token=os.environ["BOX_DEVELOPER_TOKEN"]
-)
 
+developer_token = os.environ["BOX_DEVELOPER_TOKEN"]
+
+auth = DeveloperTokenAuth(developer_token=developer_token)
 client = Client(auth)
 
-# Test connection
 me = client.user().get()
 print(f"Connected to Box as: {me.name} ({me.login})")
-
 
 
 # ============================================================
